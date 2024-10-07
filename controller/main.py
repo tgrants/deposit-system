@@ -1,5 +1,7 @@
 import cv2
 import datetime
+import serial
+import time
 
 import numpy as np
 
@@ -13,11 +15,20 @@ def main():
 		formatter_class = RawDescriptionHelpFormatter
 	)
 	parser.add_argument(
+		"-p",
+		"--port",
+		action="store",
+		default="/dev/ttyACM0",
+		help = "driver port",
+	)
+	parser.add_argument(
+		"-v",
 		"--verbose",
 		action="store_true",
 		help = "print logs",
 	)
 	parser.add_argument(
+		"-w",
 		"--window",
 		action="store_true",
 		help = "show a window with cv2 output",
@@ -26,6 +37,19 @@ def main():
 
 	# Initialize webcam
 	cap = cv2.VideoCapture(0) # Use 0 for default camera
+
+	# Connect to the driver
+	ser = serial.Serial(args.port, 9600)
+	time.sleep(2)
+	ser.write("*IDN?\n".encode())
+	while True:
+		if ser.in_waiting > 0:
+			response = ser.readline().decode().strip()
+			print("Identity:", response)
+			break
+
+	# List of scanned barcodes
+	barcode_list = []
 
 	try:
 		print("Starting")
@@ -63,6 +87,14 @@ def main():
 						(255, 0, 0),
 						2
 					)
+
+				# Save barcode
+				if barcode_data in barcode_list:
+					# Barcode already registered
+					if args.verbose:
+						print("Barcode already registered")
+				else:
+					barcode_list.append(barcode_data)
 
 			if args.window:
 				# Display the frame

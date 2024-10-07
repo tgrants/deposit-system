@@ -4,8 +4,8 @@ Software for a deposit bin prototype, created as part of the 'Introduction to Bu
 
 ## Repository contents
 
-- `controller`: Code scanner and main controller for the deposit bin
+- `controller`: Barcode scanner and main controller for the deposit bin
+- `driver`: Arduino controller for the physical components
 - `interface`: Visual interface for the deposit bin
-- `server`: An API for checking if a code has been scanned
 
 ## License
