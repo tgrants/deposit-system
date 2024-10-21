@@ -17,7 +17,7 @@ Barcode scanner and main controller for the deposit bin.
 
 - Set up python interpreter (VSCode)
 	- Get interpreter path `which python` (while in venv)
-	- Set path `CTRL+SHIFT+P -> Python: Select interpreter`
+	- Set path `CTRL+SHIFT+P` -> `Python: Select interpreter`
 
 ### Options
 
