@@ -4,15 +4,76 @@ import serial
 import signal
 import threading
 import time
+import tkinter
 import queue
 
 import numpy as np
 
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
+from PIL import Image, ImageTk
 from pyzbar.pyzbar import decode
+from tkinter import ttk
 
 
-def barcode_scanner(args, barcode_queue, stop_event):
+class SharedData:
+	def __init__(self):
+		self.barcode_queue = queue.Queue()
+		self.frame = None
+		self.lock = threading.Lock()
+	
+	def add_barcode(self, data):
+		with self.lock:
+			self.barcode_queue.put(data)
+
+	def get_barcode(self):
+		try:
+			return self.barcode_queue.get_nowait()
+		except queue.Empty:
+			return None
+	
+	def clear_barcodes(self):
+		self.barcode_queue.queue.clear()
+
+	def set_frame(self, frame):
+		self.frame = frame
+
+	def get_frame(self):
+		return self.frame
+
+
+class Gui:
+	def __init__(self, root, shared_data):
+		self.root = root
+		self.shared_data = shared_data
+		self.root.title("Deposit system")
+		self.label = ttk.Label(root, text="Label :)")
+		self.label.pack(pady=10)
+		self.video_label = ttk.Label(root)
+		self.video_label.pack()
+		root.bind("<space>", self.space_pressed)
+
+		self.current_image = None
+		self.video_thread = threading.Thread(target=self.update_video_feed)
+		self.video_thread.daemon = True
+		self.video_thread.start()
+
+	def space_pressed(self, event):
+		print("Space pressed")
+
+	def update_video_feed(self):
+		while True:
+			frame = self.shared_data.get_frame()
+			if frame is None: continue
+			frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+			img = Image.fromarray(frame)
+			imgtk = ImageTk.PhotoImage(image=img)
+			self.current_image = imgtk
+			self.video_label.config(image=imgtk)
+			self.video_label.imgtk = imgtk
+			self.root.after(50)
+
+
+def barcode_scanner(args, shared_data, stop_event):
 	print("Starting barcode scanner")
 
 	# Initialize webcam
@@ -22,6 +83,10 @@ def barcode_scanner(args, barcode_queue, stop_event):
 		while not stop_event.is_set():  # Main loop
 			# Capture frame-by-frame
 			ret, frame = cap.read()
+
+			# Save frame in SharedData
+			if ret:
+				shared_data.set_frame(frame)
 
 			# Decode barcodes in the frame
 			barcodes = decode(frame)
@@ -53,7 +118,7 @@ def barcode_scanner(args, barcode_queue, stop_event):
 					)
 
 				# Add barcode to queue
-				barcode_queue.put(barcode_data)
+				shared_data.add_barcode(barcode_data)
 
 			if args.window:
 				cv2.imshow('Barcode Scanner', frame)
@@ -68,7 +133,7 @@ def barcode_scanner(args, barcode_queue, stop_event):
 		print("Stopping barcode scanner")
 
 
-def driver_comm(args, stop_event):
+def driver_comm(args, shared_data, stop_event):
 	print("Starting driver comm")
 
 	# Connect to the driver
@@ -85,28 +150,21 @@ def driver_comm(args, stop_event):
 	return
 
 
-def interface_comm(args, stop_event):
-	print("Starting interface comm")
-	while not stop_event.is_set():
-		time.sleep(1)
-	print("Stopping interface comm")
-
-
-def controller(args, barcode_queue, stop_event):
+def controller(args, shared_data, stop_event):
 	print("Starting main controller")
 	barcode_list = [] # List of all unique scanned barcodes
 	while not stop_event.is_set():
-		if barcode_queue.empty():
+		barcode_data = shared_data.get_barcode()
+		if barcode_data == None:
 			time.sleep(0.05)
 			continue
-		barcode_data = barcode_queue.get()
 		if barcode_data in barcode_list:
 			time.sleep(0.05)
 			continue
 		if args.verbose:
 			print("Unique barcode!")
 		barcode_list.append(barcode_data)
-		barcode_queue.queue.clear()
+		shared_data.clear_barcodes()
 	print("Stopping main controller")
 
 
@@ -136,27 +194,33 @@ def main():
 	)
 	args = parser.parse_args()
 
-	barcode_queue = queue.Queue()
+	shared_data = SharedData()
 
 	stop_event = threading.Event()
 	def signal_handler(signum, frame):
 		stop_event.set()
 	signal.signal(signal.SIGINT, signal_handler)
 
-	barcode_thread = threading.Thread(target=barcode_scanner, args=(args, barcode_queue, stop_event))
-	driver_thread = threading.Thread(target=driver_comm, args=(args, stop_event))
-	interface_thread = threading.Thread(target=interface_comm, args=(args, stop_event))
-	controller_thread = threading.Thread(target=controller, args=(args, barcode_queue, stop_event))
+	barcode_thread = threading.Thread(target=barcode_scanner, args=(args, shared_data, stop_event))
+	driver_thread = threading.Thread(target=driver_comm, args=(args, shared_data, stop_event))
+	controller_thread = threading.Thread(target=controller, args=(args, shared_data, stop_event))
 
 	barcode_thread.start()
 	driver_thread.start()
-	interface_thread.start()
 	controller_thread.start()
 
-	barcode_thread.join()
-	driver_thread.join()
-	interface_thread.join()
-	controller_thread.join()
+	root = tkinter.Tk()
+	gui = Gui(root, shared_data)
+
+	def on_closing():
+		stop_event.set()
+		barcode_thread.join()
+		driver_thread.join()
+		controller_thread.join()
+		root.destroy()
+	root.protocol("WM_DELETE_WINDOW", on_closing)
+
+	root.mainloop()
 
 
 if __name__ == "__main__":
