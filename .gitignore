@@ -1,0 +1,14 @@
+# Python
+venv/
+
+# Images
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.tif
+*.psd
+*.ico
+*.webp

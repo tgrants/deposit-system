@@ -1,16 +1,17 @@
 # driver.py
 
-This script mocks the driver.
+This script mocks the driver - useful for when you don't have an arduino with all of the components at home.
 
 ## Controls
 
-See `driver/driver.ino`.
+See [`driver/README.md`](../driver/README.md).
 
 ## Instructions
 
+See [`docs/setup.md`](../docs/setup.md) for instructions to set up the working environment.
+
 ### Linux
 
-See `controller/README.md` for instructions to set up the working environment.
 Create and connect 2 virtual ports with socat: `socat -d -d pty,raw,echo=0 pty,raw,echo=0`.
 This will output something like:
 ```

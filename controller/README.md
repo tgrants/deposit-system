@@ -2,23 +2,18 @@
 
 Barcode scanner and main controller for the deposit bin.
 
-## Instructions (Linux)
+## Instructions
 
-### Setup
+See [`docs/setup.md`](../docs/setup.md) for more detailed instructions.
+
+### Linux
 
 - Clone the repository `git clone https://github.com/tgrants/deposit-system`
-- `cd deposit-system/controller`
 - Create a virtual environment `python3 -m venv venv`
 - Activate the virtual environment `source venv/bin/activate`
 - Install all dependencies `pip install -r requirements.txt`
-- Install tkinter (`apt install python3-tk` for Debian-derived distributions)
+- Install tkinter (`sudo apt install python3-tk` for Debian-derived distributions)
 - Run `python3 main.py`
-
-### Development environment
-
-- Set up python interpreter (VSCode)
-	- Get interpreter path `which python` (while in venv)
-	- Set path `CTRL+SHIFT+P` -> `Python: Select interpreter`
 
 ## Options
 
