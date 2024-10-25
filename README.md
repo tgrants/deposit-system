@@ -24,3 +24,5 @@ Contributions are welcome from the Deposit System developer team.
 For more information see [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## License
+
+This repository is licensed under the MIT License. For more details, see the [LICENSE](LICENSE.md) file.
