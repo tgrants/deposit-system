@@ -6,6 +6,7 @@ See the READMEs in each component for component-specific instructions.
 ## Linux
 
 These instructions assume you use a Debian-derived distribution.
+[Here's a quick guide](https://ubuntu.com/tutorials/command-line-for-beginners) for the Linux command line.
 
 ### Version control
 
@@ -35,7 +36,7 @@ For example, you might see (venv) before your command prompt.
 Using one virtual environment for the whole project should be fine.
 
 All dependencies are listed in `requirements.txt` files. To install them, use `pip install -r requirements.txt`.
-When you're done working, deactivate the virtual environment `deactivate`.
+When you're done, you can deactivate the virtual environment using `deactivate`.
 
 #### Interpreter
 
@@ -48,8 +49,8 @@ To solve this:
 
 #### Running
 
-You can run the python code with `python3 path_to_program.py`.
-Add options (flags) using dashes, for example `python3 main.py -vw`.
+You can run the python code with `python3 path/to/program.py`.
+Add options (flags) using dashes, for example `python3 controller/main.py -vw`.
 The component READMEs should contain all available options and their descriptions.
 
 ## Windows
@@ -59,3 +60,7 @@ The component READMEs should contain all available options and their description
 You can download python [here](https://www.python.org/downloads/windows/).
 [Here's a good guide](https://www.digitalocean.com/community/tutorials/install-python-windows-10) for installing it on Windows 10.
 Make sure you check the "Add python.exe to PATH" checkbox.
+
+## Next steps
+
+See [development.md](./development.md) for the next steps.

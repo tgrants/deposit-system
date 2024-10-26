@@ -20,7 +20,7 @@ This will output something like:
 2024/10/21 12:00:00 socat[12345] N starting data transfer loop with FDs [5,5] and [6,6]
 ```
 In this case, `/dev/pts/5` and `/dev/pts/6` are the two virtual ports. Any data written to one of these ports will be available for reading on the other.
-Run the mock driver and controller with one of these ports each: `python3 driver.py -p '/dev/pts/6'` and `python3 main.py -p '/dev/pts/6'`
+Run the mock driver and controller with one of these ports each: `python3 mocking/driver.py -p '/dev/pts/5'` and `python3 controller/main.py -p '/dev/pts/6'`
 
 ### Windows
 
