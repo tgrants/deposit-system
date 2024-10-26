@@ -39,6 +39,8 @@ Create issues or notify the group for:
 - Make changes and commit in small but meaningful chunks
 	- `git add .`
 	- `git commit -m "Description of the change"`
+- Run linters to ensure your code is formatted properly
+	- `pylint .`
 - Push your changes to your forked repository
 	- `git push origin feature/your-feature-name`
 - Once your changes are ready, open a pull request
