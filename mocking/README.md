@@ -28,8 +28,14 @@ Install [com0com](https://com0com.sourceforge.net/) and set it up. See the [docu
 Create a port twin: `install Portname=COM10 Portname=COM11`.
 Run the mock driver and controller with one of these ports each: `python driver.py -p COM10` and `python3 main.py -p COM11`
 
+### State
+
+The current state of the virtual bin is saved in `state.json`. It will be created automatically.
+It is recommended to delete this file after every update to ensure no values are missing.
+
 ## Options
 
 - `-h --help` Display a list of all commands
-- `-b --baudrate` Set port baudrate. Defaults to 9600
+- `-b --baudrate` Set port baudrate. Defaults to `9600`
+- `-f --filename` Set. Defaults to `state.json`
 - `-p --port` Set port

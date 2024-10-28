@@ -18,11 +18,77 @@ Command-line Arguments:
 """
 
 # Standard
+import json
+import os
 import time
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 # Third party
 import serial
+
+
+class State:
+	"""
+	State class to store the current state of the deposit bin.
+	"""
+
+	def __init__(self, filename):
+		"""
+		Initialize the State object and load the state from a file.
+		"""
+		self.filename = filename
+		self.state = {}
+		self.load_state()
+
+	def load_state(self):
+		"""
+		Load the state from the specified JSON file.
+		"""
+		if os.path.exists(self.filename):
+			with open(self.filename, "r", encoding="utf-8") as f:
+				self.state = json.load(f)
+		else:
+			self.reset_state()
+
+	def save_state(self):
+		"""
+		Save the current state to the specified JSON file.
+		"""
+		with open(self.filename, "w", encoding="utf-8") as f:
+			json.dump(self.state, f, indent=4)
+
+	def set_value(self, key, value):
+		"""
+		Set a value in the state.
+		"""
+		self.state[key] = value
+
+	def get_value(self, key):
+		"""
+		Get a value from the state.
+		"""
+		return self.state.get(key, None)
+
+	def remove_value(self, key):
+		"""
+		Remove a value from the state.
+		"""
+		if key in self.state:
+			del self.state[key]
+
+	def reset_state(self):
+		"""
+		Reset state with default values.
+		"""
+		self.state.clear()
+		self.state["led"] = False
+		self.state["lock_position"] = 0
+
+	def display_state(self):
+		"""
+		Display the current state.
+		"""
+		return self.state
 
 
 class SCPIParser:
@@ -82,8 +148,7 @@ def led_on():
 	"""
 	Turn on the builtin LED.
 	"""
-	global led_state
-	led_state = "ON"
+	state.set_value("led", True)
 	print("LED is ON")
 
 
@@ -91,9 +156,25 @@ def led_off():
 	"""
 	Turn off the builtin LED.
 	"""
-	global led_state
-	led_state = "OFF"
+	state.set_value("led", True)
 	print("LED is OFF")
+
+def lock_on():
+	"""
+	Lock the lid of the deposit bin.
+	"""
+	time.sleep(0.5)
+	state.set_value("lock_position", 800)
+	print("Lid locked")
+
+
+def lock_off():
+	"""
+	Unlock the lid of the deposit bin
+	"""
+	time.sleep(0.5)
+	state.set_value("lock_position", 0)
+	print("Lid unlocked")
 
 
 def setup():
@@ -104,6 +185,9 @@ def setup():
 	scpi.set_command_tree_base("LED")
 	scpi.register_command(":ON", led_on)
 	scpi.register_command(":OFF", led_off)
+	scpi.set_command_tree_base("LOCK")
+	scpi.register_command(":ON", lock_on)
+	scpi.register_command(":OFF", lock_off)
 
 
 def loop():
@@ -120,6 +204,13 @@ parser = ArgumentParser(
 	formatter_class = RawDescriptionHelpFormatter
 )
 parser.add_argument(
+	"-f",
+	"--filename",
+	action = "store",
+	default = "state.json",
+	help = "path to file for storing the state",
+)
+parser.add_argument(
 	"-p",
 	"--port",
 	action = "store",
@@ -134,7 +225,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-led_state = "OFF"
+state = State(args.filename)
 scpi = SCPIParser()
 
 port = args.port
@@ -150,3 +241,4 @@ except KeyboardInterrupt:
 	print("Exiting program...")
 finally:
 	serial_conn.close()
+	state.save_state()
