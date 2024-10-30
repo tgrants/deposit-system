@@ -198,6 +198,8 @@ def loop():
 		if serial_conn.in_waiting > 0:
 			input_command = serial_conn.readline().decode().strip()
 			scpi.process_input(input_command)
+		else:
+			time.sleep(0.01)
 
 
 parser = ArgumentParser(
