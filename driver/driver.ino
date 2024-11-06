@@ -10,6 +10,10 @@ const int stepsPerRevolution = 200;
 Stepper stepper(stepsPerRevolution, dirPin, stepPin);
 long stepDelay = 1000;
 
+// Ultrasonic sensor
+const int trigPin = 5;
+const int echoPin = 6;
+
 // Serial
 #define BAUD 9600
 
@@ -34,9 +38,15 @@ void setup() {
 	scpi.SetCommandTreeBase(F("LOCK"));
 		scpi.RegisterCommand(F(":ON"), &lockOn);
 		scpi.RegisterCommand(F(":OFF"), &lockOff);
+	scpi.SetCommandTreeBase(F("MEASure"));
+		scpi.RegisterCommand(F(":DISTance?"), &measureDistance);
  
 	Serial.begin(BAUD);
 	pinMode(LED_BUILTIN, OUTPUT);
+	pinMode(dirPin, OUTPUT);
+	pinMode(stepPin, OUTPUT);
+	pinMode(trigPin, OUTPUT);
+	pinMode(echoPin, INPUT);
 	EEPROM.get(lockPositionAddress, lockPosition);
 }
 
@@ -71,6 +81,23 @@ void moveMotor(int steps, int dir) {
 		pause(stepDelay);
 	}
 	EEPROM.put(lockPositionAddress, lockPosition);
+}
+
+/* int getDistance()
+ * Function getDistance()
+ *   returns the distance to an object as an integer using an ultrasonic sensor.
+ */
+int getDistance() {
+	// Clear trigPin
+	digitalWrite(trigPin, LOW);
+	delayMicroseconds(2);
+	// Set trigPin to HIGH for 10 µs
+	digitalWrite(trigPin, HIGH);
+	delayMicroseconds(10);
+	digitalWrite(trigPin, LOW);
+	// Read echoPin, return sound wave travel time in µs
+	long duration = pulseIn(echoPin, HIGH);
+	return duration * 0.034 / 2; // Return distance
 }
 
 /* void identify(SCPI_C commands, SCPI_P parameters, Stream& interface)
@@ -114,4 +141,13 @@ void lockOn(SCPI_C commands, SCPI_P parameters, Stream& interface) {
  */
 void lockOff(SCPI_C commands, SCPI_P parameters, Stream& interface) {
 	moveMotor(lockPosition, -1);
+}
+
+/* void measureDistance(SCPI_C commands, SCPI_P parameters, Stream& interface)
+ * Function measureDistance(commands, parameters, interface)
+ *   responds to the SCPI MEASure:DISTance? command by measuring and sending
+ *   the distance to the nearest object using the interface.
+ */
+void measureDistance(SCPI_C commands, SCPI_P parameters, Stream& interface) {
+	interface.println(getDistance());
 }

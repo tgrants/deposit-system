@@ -1,5 +1,7 @@
 # DSDriver
 
+Controller for the physical components of the deposit bin.
+
 ## Controls
 
 - `*IDN?` - Indetify device
@@ -7,8 +9,10 @@
 	- `:ON` - Toggle ON
 	- `:OFF` - Toggle OFF
 - `LOCK` - Control the lock (motor)
-	- `:ON` - move until locked
-	- `:UNLOCK` - move until unlocked
+	- `:ON` - move motor until locked
+	- `:OFF` - move motor until unlocked
+- `MEAS` - Measure using ultrasonic sensor
+	- `:DIST?` - Distance
 
 ### Examples
 
