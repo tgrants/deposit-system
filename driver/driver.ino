@@ -85,7 +85,8 @@ void moveMotor(int steps, int dir) {
 
 /* int getDistance()
  * Function getDistance()
- *   returns the distance to an object as an integer using an ultrasonic sensor.
+ *   returns the distance to an object in cm as an integer using an ultrasonic
+ *   sensor.
  */
 int getDistance() {
 	// Clear trigPin
@@ -97,7 +98,7 @@ int getDistance() {
 	digitalWrite(trigPin, LOW);
 	// Read echoPin, return sound wave travel time in µs
 	long duration = pulseIn(echoPin, HIGH);
-	return duration * 0.034 / 2; // Return distance
+	return duration * 0.034 / 2; // Return distance, cm
 }
 
 /* void identify(SCPI_C commands, SCPI_P parameters, Stream& interface)

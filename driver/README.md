@@ -21,3 +21,4 @@ Controller for the physical components of the deposit bin.
 - https://wiki.archlinux.org/title/Arduino
 - https://github.com/arduino-libraries/Stepper/
 - https://github.com/Vrekrer/Vrekrer_scpi_parser
+- https://howtomechatronics.com/tutorials/arduino/ultrasonic-sensor-hc-sr04/

@@ -20,6 +20,7 @@ Command-line Arguments:
 # Standard
 import json
 import os
+import random
 import time
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -170,11 +171,21 @@ def lock_on():
 
 def lock_off():
 	"""
-	Unlock the lid of the deposit bin
+	Unlock the lid of the deposit bin.
 	"""
 	time.sleep(0.5)
 	state.set_value("lock_position", 0)
 	print("Lid unlocked")
+
+
+def measure_distance() -> int:
+	"""
+	Measure distance in cm using ultrasonic sensor.
+	"""
+	time.sleep(0.05)
+	distance: int = random.randrange(0, 300)
+	print(f"Distance to object: {distance}")
+	return distance
 
 
 def setup():
@@ -188,6 +199,8 @@ def setup():
 	scpi.set_command_tree_base("LOCK")
 	scpi.register_command(":ON", lock_on)
 	scpi.register_command(":OFF", lock_off)
+	scpi.set_command_tree_base("MEASure")
+	scpi.register_command(":DISTance?", measure_distance)
 
 
 def loop():
