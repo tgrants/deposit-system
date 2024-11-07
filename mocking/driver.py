@@ -142,7 +142,9 @@ def identify():
 	"""
 	Send device identification information over serial.
 	"""
-	serial_conn.write("DSDevs,DSDriver,#00,mock_driver\n".encode())
+	id_info = "DSDevs,DSDriver,#00,mock_driver\n"
+	serial_conn.write(id_info.encode())
+	print(id_info)
 
 
 def operation_complete():
@@ -150,6 +152,7 @@ def operation_complete():
 	Return 1 if there are no pending operations/
 	"""
 	serial_conn.write("1\n".encode()) # Always return 1 because the execution is concurrent
+	print("1")
 
 
 def led_on():

@@ -48,6 +48,7 @@ class SharedData:
 		Initialize SharedData.
 		"""
 		self.barcode_queue = queue.Queue()
+		self.command_queue = queue.Queue()
 		self.frame = None
 		self.lock = threading.Lock()
 
@@ -220,7 +221,7 @@ def barcode_scanner(args, shared_data, stop_event):
 		print("Stopping barcode scanner")
 
 
-def driver_comm(args, shared_data, stop_event):
+def driver_comm(args, shared_data: SharedData, stop_event):
 	"""
 	Communicate with the driver.
 	
@@ -229,18 +230,47 @@ def driver_comm(args, shared_data, stop_event):
 		shared_data (SharedData): The shared data instance.
 		stop_event (threading.Event): Event to signal when to stop driver communication.
 	"""
+	q_list = [ # Query list
+		"*IDN?",
+		"*OPC?",
+		"MEAS:DIST?"
+	]
+	c_list = [ # Command list
+		"LED:ON",
+		"LED:OFF",
+		"LOCK:ON",
+		"LOCK:OFF",
+	]
 	print("Starting driver comm")
-
 	# Connect to the driver
 	ser = serial.Serial(args.port, 9600)
 	time.sleep(2)
 	ser.write("*IDN?\n".encode())
 	while not stop_event.is_set():
+		time.sleep(0.01)
 		if ser.in_waiting > 0:
 			response = ser.readline().decode().strip()
 			print("Identity:", response)
 			break
-
+	while not stop_event.is_set():
+		if shared_data.command_queue.empty():
+			time.sleep(0.01)
+			continue
+		cmd = shared_data.command_queue.get_nowait()
+		if cmd in q_list:
+			ser.write(cmd.encode())
+		elif cmd in c_list:
+			ser.write(cmd.encode())
+			ser.write("*OPC?".encode())
+		else:
+			print("Command not recognized")
+			continue
+		while not stop_event.is_set():
+			time.sleep(0.01)
+			if ser.in_waiting > 0:
+				response = ser.readline().decode().strip()
+				print(response)
+				break
 	print("Stopping driver comm")
 
 
@@ -268,6 +298,24 @@ def controller(args, shared_data, stop_event):
 		barcode_list.append(barcode_data)
 		shared_data.clear_barcodes()
 	print("Stopping main controller")
+
+
+def console_input(args, shared_data: SharedData, stop_event):
+	"""
+	Reads input from the console and adds it to the command queue.
+
+	Args:
+		args (Namespace): Parsed command-line arguments.
+		shared_data (SharedData): The shared data instance.
+		stop_event (threading.Event): Event to signal when to stop listening for input.
+	"""
+	print("Starting console input thread")
+	while not stop_event.is_set():
+		# Read input from the console
+		user_input = input()
+		if user_input:
+			shared_data.command_queue.put(user_input)
+	print("Stopping console input thread")
 
 
 def main():
@@ -310,10 +358,12 @@ def main():
 	barcode_thread = threading.Thread(target=barcode_scanner, args=(args, shared_data, stop_event))
 	driver_thread = threading.Thread(target=driver_comm, args=(args, shared_data, stop_event))
 	controller_thread = threading.Thread(target=controller, args=(args, shared_data, stop_event))
+	console_input_thread = threading.Thread(target=console_input, args=(args, shared_data, stop_event))
 
 	barcode_thread.start()
 	driver_thread.start()
 	controller_thread.start()
+	console_input_thread.start()
 
 	root = tkinter.Tk()
 	Gui(root, shared_data)
