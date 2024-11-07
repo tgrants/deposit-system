@@ -145,6 +145,13 @@ def identify():
 	serial_conn.write("DSDevs,DSDriver,#00,mock_driver\n".encode())
 
 
+def operation_complete():
+	"""
+	Return 1 if there are no pending operations/
+	"""
+	serial_conn.write("1\n".encode()) # Always return 1 because the execution is concurrent
+
+
 def led_on():
 	"""
 	Turn on the builtin LED.
@@ -159,6 +166,7 @@ def led_off():
 	"""
 	state.set_value("led", True)
 	print("LED is OFF")
+
 
 def lock_on():
 	"""
@@ -178,14 +186,14 @@ def lock_off():
 	print("Lid unlocked")
 
 
-def measure_distance() -> int:
+def measure_distance():
 	"""
 	Measure distance in cm using ultrasonic sensor.
 	"""
 	time.sleep(0.05)
 	distance: int = random.randrange(0, 300)
 	print(f"Distance to object: {distance}")
-	return distance
+	serial_conn.write(distance)
 
 
 def setup():
@@ -193,6 +201,7 @@ def setup():
 	Register SCPI commands and configure the command tree base.
 	"""
 	scpi.register_command("*IDN?", identify)
+	scpi.register_command("*OPC?", operation_complete)
 	scpi.set_command_tree_base("LED")
 	scpi.register_command(":ON", led_on)
 	scpi.register_command(":OFF", led_off)

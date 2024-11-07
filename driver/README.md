@@ -5,6 +5,7 @@ Controller for the physical components of the deposit bin.
 ## Controls
 
 - `*IDN?` - Indetify device
+- `*OPC?` - Return 1 if there are no pending operations
 - `LED` - Control the builtin LED
 	- `:ON` - Toggle ON
 	- `:OFF` - Toggle OFF

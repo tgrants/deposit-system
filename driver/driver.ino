@@ -32,6 +32,7 @@ SCPI_Parser scpi;
  */
 void setup() {
 	scpi.RegisterCommand("*IDN?", &identify);
+	scpi.RegisterCommand("*OPC?", &operationComplete);
 	scpi.SetCommandTreeBase(F("LED"));
 		scpi.RegisterCommand(F(":ON"), &ledOn);
 		scpi.RegisterCommand(F(":OFF"), &ledOff);
@@ -110,6 +111,15 @@ void identify(SCPI_C commands, SCPI_P parameters, Stream& interface) {
 	interface.println(F("DSDevs,DSDriver,#00," VREKRER_SCPI_VERSION));
 	//*IDN? Suggested return string should be in the following format:
 	// "<vendor>,<model>,<serial number>,<firmware>"
+}
+
+/* void operationComplete(SCPI_C commands, SCPI_P parameters, Stream& interface)
+ * Function operationComplete(commands, parameters, interface)
+ *   responds to the SCPI *OPC? query by sending 1 back over the interface after
+ *   a command has been completed.
+ */
+void operationComplete(SCPI_C commands, SCPI_P parameters, Stream& interface) {
+	interface.println(1); // Always return 1 because the execution is concurrent
 }
 
 /* void ledOn(SCPI_C commands, SCPI_P parameters, Stream& interface)
