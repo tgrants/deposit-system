@@ -20,6 +20,7 @@ Command-line Arguments:
 # Standard
 import json
 import os
+import random
 import time
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
@@ -141,7 +142,17 @@ def identify():
 	"""
 	Send device identification information over serial.
 	"""
-	serial_conn.write("DSDevs,DSDriver,#00,mock_driver\n".encode())
+	id_info = "DSDevs,DSDriver,#00,mock_driver\n"
+	serial_conn.write(id_info.encode())
+	print(id_info)
+
+
+def operation_complete():
+	"""
+	Return 1 if there are no pending operations/
+	"""
+	serial_conn.write("1\n".encode()) # Always return 1 because the execution is concurrent
+	print("1")
 
 
 def led_on():
@@ -159,6 +170,7 @@ def led_off():
 	state.set_value("led", True)
 	print("LED is OFF")
 
+
 def lock_on():
 	"""
 	Lock the lid of the deposit bin.
@@ -170,11 +182,21 @@ def lock_on():
 
 def lock_off():
 	"""
-	Unlock the lid of the deposit bin
+	Unlock the lid of the deposit bin.
 	"""
 	time.sleep(0.5)
 	state.set_value("lock_position", 0)
 	print("Lid unlocked")
+
+
+def measure_distance():
+	"""
+	Measure distance in cm using ultrasonic sensor.
+	"""
+	time.sleep(0.05)
+	distance: int = random.randrange(0, 300)
+	print(f"Distance to object: {distance}")
+	serial_conn.write(distance)
 
 
 def setup():
@@ -182,12 +204,15 @@ def setup():
 	Register SCPI commands and configure the command tree base.
 	"""
 	scpi.register_command("*IDN?", identify)
+	scpi.register_command("*OPC?", operation_complete)
 	scpi.set_command_tree_base("LED")
 	scpi.register_command(":ON", led_on)
 	scpi.register_command(":OFF", led_off)
 	scpi.set_command_tree_base("LOCK")
 	scpi.register_command(":ON", lock_on)
 	scpi.register_command(":OFF", lock_off)
+	scpi.set_command_tree_base("MEASure")
+	scpi.register_command(":DISTance?", measure_distance)
 
 
 def loop():

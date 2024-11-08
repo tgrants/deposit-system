@@ -35,7 +35,9 @@ Your shell prompt will change, indicating that you're now working within the env
 For example, you might see (venv) before your command prompt.
 Using one virtual environment for the whole project should be fine.
 
-All dependencies are listed in `requirements.txt` files. To install them, use `pip install -r requirements.txt`.
+#### Dependencies
+
+All dependencies are listed in the `requirements.txt` file. To install them, use `pip install -r requirements.txt`.
 When you're done, you can deactivate the virtual environment using `deactivate`.
 
 #### Interpreter
@@ -60,6 +62,12 @@ The component READMEs should contain all available options and their description
 You can download python [here](https://www.python.org/downloads/windows/).
 [Here's a good guide](https://www.digitalocean.com/community/tutorials/install-python-windows-10) for installing it on Windows 10.
 Make sure you check the "Add python.exe to PATH" checkbox.
+
+#### Dependencies
+
+All dependencies are listed in the `requirements.txt` file. To install them, use `pip install -r requirements.txt`.
+
+If you get a `Could not find module libzbar-64.dll` error, try installing [vcredist_x64.exe](https://www.microsoft.com/en-gb/download/details.aspx?id=40784).
 
 ## Next steps
 
